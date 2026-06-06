@@ -20,12 +20,14 @@ Open `index.html` in a browser, or visit the live link above.
 - **Your semester** — set the work-days in your term, the total cost, and your
   baseline quality hours/day. It derives the total work to absorb and the cost
   per day, each with a short sanity check.
-- **Your days** — click any day to skip it; weeks stack as rows of five.
+- **Your days** — set how many days you'll skip with a slider, or the 1 / 2 / 3
+  days-a-week presets. The week grid (rows of five) fills in to match; the days
+  are placed organically — varied each week — since only the *count* drives the
+  math, not which specific days.
 - **The balloon** — a live, hyperbolic curve of hours/day on the *remaining*
   days as skips increase, with color bands (Comfortable → Getting heavy → Top
   grades at risk → Fantasy zone), a 10-hour ceiling line, and your current
-  position marked. Skip a day on the left and watch it move.
-- **Quick scenarios** — "Skip 1/week" and "Skip 2/week" presets.
+  position marked. Move the slider and watch the marker climb in real time.
 
 ## The model
 
