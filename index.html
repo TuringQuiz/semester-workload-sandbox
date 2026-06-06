@@ -486,23 +486,23 @@
       const cy = (yTop + yBot) / 2 + 4;
       // Right-aligned: with the zoomed x-axis the curve exits before the right edge,
       // leaving the right side of every band empty for its label.
-      s += `<text x="${padL + plotW - 10}" y="${cy}" text-anchor="end" font-size="12.5" font-weight="700" fill="${gv(b.color)}" opacity=".85">${b.label}</text>`;
+      s += `<text x="${padL + plotW - 10}" y="${cy}" text-anchor="end" font-size="15.5" font-weight="700" fill="${gv(b.color)}" opacity=".85">${b.label}</text>`;
     });
 
     // 10-hour ceiling line + label (left side, clear of band labels on the right)
     s += `<line x1="${padL}" y1="${y(10)}" x2="${padL + plotW}" y2="${y(10)}" stroke="#1a1a1a" stroke-width="1.6" stroke-dasharray="5 4"/>`;
-    s += `<text x="${padL + 8}" y="${y(10) - 6}" text-anchor="start" font-size="11.5" font-weight="700" fill="#1a1a1a">10-hour ceiling</text>`;
+    s += `<text x="${padL + 8}" y="${y(10) - 6}" text-anchor="start" font-size="14" font-weight="700" fill="#1a1a1a">10-hour ceiling</text>`;
 
     // axes ticks
     [4, 8, 12, 16].forEach((h) => {
-      s += `<text x="${padL - 8}" y="${y(h) + 4}" text-anchor="end" font-size="10" fill="#6b665c">${h}</text>`;
+      s += `<text x="${padL - 8}" y="${y(h) + 4}" text-anchor="end" font-size="13" fill="#6b665c">${h}</text>`;
     });
-    s += `<text transform="translate(16 ${padT + plotH / 2}) rotate(-90)" text-anchor="middle" font-size="11" fill="#6b665c">hours / day</text>`;
+    s += `<text transform="translate(16 ${padT + plotH / 2}) rotate(-90)" text-anchor="middle" font-size="13.5" fill="#6b665c">hours / day</text>`;
     const xstep = [1, 2, 3, 5, 10, 15, 20].find((st) => xMax / st <= 6) || Math.ceil(xMax / 6);
     for (let kk = 0; kk <= xMax; kk += xstep) {
-      s += `<text x="${x(kk)}" y="${H - 18}" text-anchor="middle" font-size="10" fill="#6b665c">${kk}</text>`;
+      s += `<text x="${x(kk)}" y="${H - 18}" text-anchor="middle" font-size="13" fill="#6b665c">${kk}</text>`;
     }
-    s += `<text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="#6b665c">days skipped →</text>`;
+    s += `<text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="13.5" fill="#6b665c">days skipped →</text>`;
 
     // ---- the curve, in two parts ----
     const buildPath = (kFrom, kTo) => {
@@ -525,7 +525,7 @@
       const ex = x(kCross), ey = padT;
       s += `<path d="M ${ex} ${ey - 2} l -5 9 l 10 0 z" fill="${gv("--accent-faint")}"/>`;
       const labLeft = ex > padL + plotW * 0.55;
-      s += `<text x="${labLeft ? ex - 9 : ex + 10}" y="${ey + 12}" text-anchor="${labLeft ? "end" : "start"}" font-size="11" font-weight="700" fill="${gv("--accent-faint")}">↑ climbs to ∞</text>`;
+      s += `<text x="${labLeft ? ex - 9 : ex + 10}" y="${ey + 12}" text-anchor="${labLeft ? "end" : "start"}" font-size="13.5" font-weight="700" fill="${gv("--accent-faint")}">↑ climbs to ∞</text>`;
     }
 
     // ---- current-position marker ----
