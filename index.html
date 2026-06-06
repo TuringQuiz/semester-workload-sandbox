@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>What does skipping a day do to your workload?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8E%88%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:        #f5f0e6;
+    --ink:          #2a2620;
+    --ink-soft:     #6e685b;
+    --line:         #e7dfcd;
+    --card:         #fffdf8;
+
+    --green:        #2f9c6a;
+    --green-soft:   #e6efe1;
+    --yellow:       #cf9d22;
+    --yellow-soft:  #f6eccd;
+    --red:          #d2563a;
+    --red-soft:     #f3e1d6;
+    --fantasy:      #835ab0;
+    --fantasy-soft: #ebe2f0;
+
+    --accent:       #2f5288;
+    --accent-faint: #a0b6d2;
+
+    --radius:       16px;
+    --shadow:       0 1px 1px rgba(60,48,28,.04), 0 10px 30px -10px rgba(60,48,28,.13);
+    --font:         "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 12% -12%, #fffaf0 0%, transparent 60%),
+      radial-gradient(1000px 520px at 112% -4%, #f1ebdc 0%, transparent 55%),
+      var(--paper);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* paper grain */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    opacity: .045; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header.app { margin-bottom: 28px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--accent); border-radius: 2px; opacity: .7; }
+  h1 {
+    font-family: var(--font-display); font-optical-sizing: auto;
+    font-size: clamp(31px, 5.2vw, 50px); font-weight: 560; line-height: 1.03;
+    margin: 0 0 14px; letter-spacing: -.015em; max-width: 18ch;
+  }
+  .lede { color: var(--ink-soft); max-width: 64ch; font-size: 16px; line-height: 1.62; margin: 0; }
+  .lede b { color: var(--ink); font-weight: 600; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 26px;
+  }
+  .card h2 { font-family: var(--font-display); font-optical-sizing: auto; font-size: 21px; font-weight: 540; margin: 0 0 5px; letter-spacing: -.005em; }
+  .card .sub { color: var(--ink-soft); font-size: 14.5px; line-height: 1.55; margin: 0 0 18px; max-width: 70ch; }
+  .card .sub .anchor { display: block; margin-top: 8px; font-style: italic; }
+  .card .sub .anchor b { font-style: normal; color: var(--ink); font-weight: 600; }
+  .stack { margin-top: 22px; }
+
+  /* ---- Controls ---- */
+  .ctl-grid { display: grid; gap: 24px; grid-template-columns: 1fr 1.5fr 1fr; align-items: start; }
+  @media (max-width: 820px){ .ctl-grid { grid-template-columns: 1fr; } }
+  /* Cost sits apart — it's a separate consideration, not part of the workload math */
+  @media (min-width: 821px){ .ctl-grid .cost-sep { border-left: 1px dashed var(--line); padding-left: 26px; } }
+  .hint-dyn.explain { margin-top: 10px; }
+  #baseHint { opacity: .8; }
+
+  .field label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 8px; }
+  .field .hint { font-size: 12.5px; color: var(--ink-soft); font-weight: 400; }
+  .field .row { display: flex; align-items: center; gap: 10px; }
+
+  input[type="number"] {
+    width: 100%; font: inherit; font-size: 15px;
+    padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px;
+    background: var(--paper); color: var(--ink);
+  }
+  input[type="number"]:focus {
+    outline: none; border-color: var(--accent); background: #fff;
+    box-shadow: 0 0 0 3px rgba(47,82,136,.14);
+  }
+  .moneywrap { position: relative; }
+  .moneywrap .sym { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); font-size: 15px; }
+  .moneywrap input { padding-left: 24px; }
+
+  input[type="range"] { width: 100%; accent-color: var(--accent); height: 22px; cursor: pointer; }
+
+  /* segmented hour buttons */
+  .hourseg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .hourseg button {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    width: 38px; height: 38px; border-radius: 9px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft);
+    transition: all .12s ease;
+  }
+  .hourseg button:hover { border-color: var(--accent); color: var(--accent); }
+  .hourseg button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .hint-dyn { margin-top: 8px; font-size: 12.5px; color: var(--ink-soft); }
+
+  .derived {
+    margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--line);
+    display: flex; flex-wrap: wrap; gap: 20px 44px; align-items: flex-start; justify-content: space-between;
+  }
+  .derived .stat { display: flex; flex-direction: column; gap: 2px; flex: 1 1 300px; max-width: 460px; }
+  .derived .stat .note { font-size: 12px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
+  .derived .stat .note b { color: var(--ink); font-weight: 600; }
+  .derived .stat .k { font-size: 12px; color: var(--ink-soft); }
+  .derived .stat .v { font-family: var(--font-mono); font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: var(--ink); }
+
+  /* ---- Days + graph workspace (two columns) ---- */
+  .workspace { display: grid; grid-template-columns: minmax(230px, 1fr) 1.9fr; gap: 26px 36px; align-items: start; }
+  @media (max-width: 860px){ .workspace { grid-template-columns: 1fr; } }
+  .col-days h2, .col-graph h2 { margin-bottom: 4px; }
+
+  .counts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pill { font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; }
+  .pill.done { background: var(--green-soft); color: #1c6b48; }
+  .pill.skip { background: #efe9df; color: #7a7060; }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .pill.done .dot { background: var(--green); }
+  .pill.skip  .dot { background: #b9b0a0; }
+  .day-presets { margin-top: 12px; }
+
+  /* weeks stacked vertically, week number in a gutter */
+  .weeks-col { display: flex; flex-direction: column; gap: 7px; margin-top: 18px; }
+  .week-row { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 10px; }
+  .week-row .wk-n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); text-align: right; opacity: .7; }
+  .week-days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .day {
+    height: 30px; border: none; cursor: pointer; border-radius: 8px; position: relative;
+    font: inherit; display: flex; align-items: center; justify-content: center; color: #fff;
+    transition: transform .1s ease, box-shadow .15s ease, background .2s ease;
+  }
+  .day .mark { font-size: 15px; line-height: 1; }
+  .day.done { background: linear-gradient(160deg, #3aa978, #2f9c6a); box-shadow: inset 0 -2px 0 rgba(0,0,0,.08); }
+  .day.skip { background: repeating-linear-gradient(135deg, #ece5d8, #ece5d8 5px, #e4dccc 5px, #e4dccc 10px); color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--line); }
+  .day:hover { transform: translateY(-1px) scale(1.06); box-shadow: 0 5px 12px rgba(44,42,38,.16); z-index: 2; }
+  .day:focus-visible { outline: 3px solid rgba(47,82,136,.4); outline-offset: 2px; }
+
+  /* ---- Workload centerpiece ---- */
+  .readout { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .readlabel { font-size: 14px; color: var(--ink-soft); margin: 0; letter-spacing: .01em; }
+  .readlabel b { color: var(--ink); }
+  .hugeval { font-family: var(--font-mono); font-size: 52px; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1; color: var(--ink); }
+  .readunit { font-size: 18px; font-weight: 700; color: var(--ink-soft); align-self: flex-end; margin-bottom: 7px; }
+  .delta { font-size: 16px; font-weight: 700; transition: color .25s ease; }
+  .chart { width: 100%; height: auto; display: block; margin-top: 6px; }
+  .takeaway { font-size: 14px; color: var(--ink-soft); margin: 12px 0 0; }
+  .takeaway b { color: var(--ink); }
+
+  .btn, .actions .btn {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    padding: 6px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  }
+  .btn:hover, .actions .btn:hover { background: #fff; border-color: var(--accent); color: var(--accent); }
+  .btn-group { display: inline-flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+  .btn-home { margin-left: 5px; border-style: dashed; color: var(--ink-soft); }
+
+  .foot { margin-top: 28px; font-size: 12.5px; color: var(--ink-soft); text-align: center; font-style: italic; }
+
+  /* staggered page-load reveal */
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: no-preference) {
+    header.app, .card { opacity: 0; animation: rise .6s cubic-bezier(.22,.61,.36,1) forwards; }
+    header.app { animation-delay: .02s; }
+    .card:nth-of-type(1) { animation-delay: .10s; }
+    .card:nth-of-type(2) { animation-delay: .18s; }
+    .card:nth-of-type(3) { animation-delay: .26s; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app">
+    <div class="eyebrow">An interactive what-if explorer</div>
+    <h1>What does skipping a day do to your workload?</h1>
+    <p class="lede">
+      A semester is a <b>finite, surprisingly small</b> number of work-days, and the term's work is
+      split across them. Skip one and that work doesn't disappear — it lands on the days that are left.
+      Skip a few more and the pile on each remaining day grows <b>faster and faster</b>, because there
+      are fewer days each time to absorb it. Set up your term below, toggle the days you might miss, and
+      see how quickly <b>"I'll catch up later"</b> stops being realistic.
+    </p>
+  </header>
+
+  <!-- CONTROLS -->
+  <section class="card">
+    <h2>Your semester</h2>
+    <p class="sub">Set these to match your real term, then experiment below.
+      <span class="anchor">A typical summer session is around <b>25</b> work-days; a full fall or spring semester, roughly <b>65</b> — counting the days you'll really sit down and work. These are starting points; set yours to match.</span></p>
+    <div class="ctl-grid">
+
+      <div class="field">
+        <label>Work-days in the term
+          <span class="hint">— actual days you'd put in work, after breaks</span></label>
+        <div class="row">
+          <input id="inN" type="range" min="10" max="90" step="1" />
+          <input id="inNnum" type="number" min="1" max="200" style="max-width:80px" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Baseline quality hours / day</label>
+        <div class="hourseg" id="hourSeg"></div>
+        <div class="hint-dyn explain">The concentrated, high-quality work hours you can put in each day — enough to finish the term with your best possible grades.</div>
+        <div class="hint-dyn" id="baseHint">e.g. ≈ 2 hr lecture + 4 hr study</div>
+      </div>
+
+      <div class="field cost-sep">
+        <label>Total cost for the term
+          <span class="hint">— tuition + room/board</span></label>
+        <div class="moneywrap">
+          <span class="sym">$</span>
+          <input id="inCost" type="number" min="0" step="500" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="derived">
+      <div class="stat">
+        <span class="k">Total work to absorb</span>
+        <span class="v" id="dTotalHrs">—</span>
+        <span class="note">Rough sanity check: about <b>100 hours per course</b> for A-level results. So a 2-course summer ≈ 200 hr, a 5-course semester ≈ 500 hr. Heavy STEM load? Adjust up. Unusually light? Adjust down — then ask why you're paying this much per day to learn so little.</span>
+      </div>
+      <div class="stat cost-stat">
+        <span class="k">Cost per day</span>
+        <span class="v" id="dCostDay">—</span>
+        <span class="note">What a single day in a college environment costs your family — an anchor for your priorities. The question worth asking every day: <b>am I getting my money's worth out of this one?</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DAYS + GRAPH (side by side so toggles move the curve in view) -->
+  <section class="card stack workspace">
+
+    <div class="col-days">
+      <h2>Your days</h2>
+      <p class="sub">Click a day to skip it and watch the curve move. Each row is a week.</p>
+      <div class="counts">
+        <span class="pill done"><span class="dot"></span><span id="cntDone">0</span> done</span>
+        <span class="pill skip"><span class="dot"></span><span id="cntSkip">0</span> skipped</span>
+      </div>
+      <div class="btn-group day-presets">
+        <button class="btn" id="btnSkip1">Skip 1/week</button>
+        <button class="btn" id="btnSkip2">Skip 2/week</button>
+        <button class="btn btn-home" id="btnReset">Reset</button>
+      </div>
+      <div class="weeks-col" id="weeks"></div>
+    </div>
+
+    <div class="col-graph">
+      <h2>The balloon · workload per remaining day</h2>
+      <p class="sub">Skip a day and its work doesn't disappear — it lands on the days that are left.</p>
+      <p class="readlabel">Each remaining day now has to carry</p>
+      <div class="readout">
+        <span class="hugeval" id="loadBig">8.0</span>
+        <span class="readunit">hr / day</span>
+        <span class="delta" id="loadDelta" style="color:var(--green)">at baseline</span>
+      </div>
+      <svg class="chart" id="curve" viewBox="0 0 820 440" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Workload per remaining day as days are skipped"></svg>
+      <p class="takeaway">
+        The curve is <b>hyperbolic, not a straight line</b> — each extra skip hurts more than the last,
+        because the days left to absorb the work keep shrinking. And there's a practical limit on how much
+        you can pile onto a single day: <b>8 hours is already a heavy day</b>, and a sustained <b>10</b> is
+        about as much genuinely demanding work as almost anyone can do well. Past that <b>10-hour ceiling</b>
+        a few people can still grind it out — but for most students what's really at stake isn't whether the
+        work technically fits, it's your <b>top grades</b>.
+      </p>
+    </div>
+
+  </section>
+
+  <p class="foot">The curve your syllabus never shows you.</p>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- State ----------
+  const state = { N: 65, cost: 35000, baseline: 8, days: [] };
+  const HOURS = [3, 4, 5, 6, 7, 8, 9, 10];   // segmented baseline options
+  const Y_MAX = 16;                            // hrs axis ceiling for the chart
+  const $ = (id) => document.getElementById(id);
+  const gv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  function resizeDays(n) {
+    const old = state.days, next = [];
+    for (let i = 0; i < n; i++) next.push(i < old.length ? old[i] : true);
+    state.days = next;
+  }
+
+  // ---------- Derived ----------
+  function derived() {
+    const N = state.N;
+    const k = state.days.filter((d) => !d).length;
+    const remaining = N - k;
+    const costPerDay = state.cost / N;
+    const totalHrs = N * state.baseline;
+    const load = remaining > 0 ? totalHrs / remaining : Infinity;
+    return { N, k, remaining, costPerDay, totalHrs, load, doneCount: N - k };
+  }
+
+  const money = (v) => isFinite(v) ? "$" + Math.round(v).toLocaleString("en-US") : "—";
+
+  // Color zones — Green ≤8, Yellow 8–10, Red 10–12, Fantasy >12 ; ceiling at 10
+  const BANDS = [
+    { lo: 0,  hi: 8,     color: "--green",   soft: "--green-soft",   name: "green",   label: "Comfortable",          delta: "comfortable" },
+    { lo: 8,  hi: 10,    color: "--yellow",  soft: "--yellow-soft",  name: "yellow",  label: "Getting heavy",        delta: "getting heavy" },
+    { lo: 10, hi: 12,    color: "--red",     soft: "--red-soft",     name: "red",     label: "Top grades at risk",   delta: "top grades at risk" },
+    { lo: 12, hi: Y_MAX, color: "--fantasy", soft: "--fantasy-soft", name: "fantasy", label: "Fantasy zone 🪄",       delta: "say goodbye to your A's" },
+  ];
+  const zoneFor = (h) => BANDS.find((b) => h <= b.hi) || BANDS[BANDS.length - 1];
+
+  // ---------- Baseline control ----------
+  function buildHourSeg() {
+    const seg = $("hourSeg");
+    seg.innerHTML = "";
+    HOURS.forEach((h) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = h;
+      b.className = (h === state.baseline) ? "on" : "";
+      b.setAttribute("aria-pressed", String(h === state.baseline));
+      b.addEventListener("click", () => {
+        state.baseline = h;
+        [...seg.children].forEach((c) => {
+          const on = +c.textContent === h;
+          c.className = on ? "on" : ""; c.setAttribute("aria-pressed", String(on));
+        });
+        updateBaseHint();
+        renderAll(false);
+      });
+      seg.appendChild(b);
+    });
+    updateBaseHint();
+  }
+  function updateBaseHint() {
+    // hold the 1:2 lecture:study ratio; round lecture to nearest 0.5, study = remainder
+    const h = state.baseline;
+    const lec = Math.round((h / 3) * 2) / 2;
+    const study = Math.round((h - lec) * 2) / 2;
+    const fmt = (x) => (x % 1 === 0 ? x.toFixed(0) : x.toFixed(1));
+    $("baseHint").textContent = `e.g. ≈ ${fmt(lec)} hr lecture + ${fmt(study)} hr study`;
+  }
+
+  // ---------- Day grid (weeks of 5) ----------
+  function renderWeeks() {
+    const wrap = $("weeks");
+    wrap.innerHTML = "";
+    const N = state.N;
+    const nWeeks = Math.ceil(N / 5);
+    const frag = document.createDocumentFragment();
+    for (let w = 0; w < nWeeks; w++) {
+      const row = document.createElement("div");
+      row.className = "week-row";
+      const n = document.createElement("span");
+      n.className = "wk-n";
+      n.textContent = (w + 1);
+      row.appendChild(n);
+      const dd = document.createElement("div");
+      dd.className = "week-days";
+      for (let j = 0; j < 5; j++) {
+        const i = w * 5 + j;
+        if (i >= N) { const sp = document.createElement("span"); dd.appendChild(sp); continue; }
+        const done = state.days[i];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "day " + (done ? "done" : "skip");
+        b.setAttribute("aria-pressed", String(!done));
+        b.setAttribute("aria-label", `Day ${i + 1} — ${done ? "done" : "skipped"}`);
+        b.innerHTML = `<span class="mark">${done ? "✓" : "✕"}</span>`;
+        b.addEventListener("click", () => {
+          state.days[i] = !state.days[i];
+          const on = state.days[i];
+          b.className = "day " + (on ? "done" : "skip");
+          b.setAttribute("aria-pressed", String(!on));
+          b.querySelector(".mark").textContent = on ? "✓" : "✕";
+          renderAll(false);
+        });
+        dd.appendChild(b);
+      }
+      row.appendChild(dd);
+      frag.appendChild(row);
+    }
+    wrap.appendChild(frag);
+  }
+
+  // ---------- Workload readout + curve ----------
+  function renderWorkload(d) {
+    $("loadBig").textContent = isFinite(d.load) ? d.load.toFixed(1) : "∞";
+    const deltaEl = $("loadDelta");
+    if (d.k === 0) {
+      deltaEl.textContent = "at baseline"; deltaEl.style.color = gv("--green");
+    } else if (!isFinite(d.load)) {
+      deltaEl.textContent = "no days left — impossible"; deltaEl.style.color = gv("--fantasy");
+    } else {
+      const z = zoneFor(d.load);
+      deltaEl.textContent = `+${(d.load - state.baseline).toFixed(1)} hr/day · ${z.delta}`;
+      deltaEl.style.color = gv(z.color);
+    }
+    drawCurve(d);
+  }
+
+  function drawCurve(d) {
+    const svg = $("curve");
+    const W = 820, H = 440, padL = 54, padR = 20, padT = 24, padB = 48;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const N = state.N, base = state.baseline, kMax = N - 1;
+    const yMin = Math.min(4, base);  // floor the y-axis at 4 hr (reclaims the empty space below)
+    const y = (h) => { const hh = Math.max(yMin, Math.min(h, Y_MAX)); return padT + (1 - (hh - yMin) / (Y_MAX - yMin)) * plotH; };
+    const loadAt = (k) => (N - k) > 0 ? (N * base) / (N - k) : Infinity;
+    // k where load crosses a given hours value (since load = N*base/(N-k))
+    const kAt = (h) => N - (N * base) / h;
+    const kCross = kAt(Y_MAX);   // load hits the 16 hr ceiling here (curve exits top)
+    const kBlow  = kAt(12);      // enters fantasy band — start the "exploding" styling here
+    // Zoom the x-axis to just past where the curve exits the top (~10% padding), so the
+    // readable part of the curve fills the width instead of trailing flat out to N-1 days.
+    const xMax = Math.max(2, Math.min(kMax, Math.ceil(kCross * 1.1)));
+    const x = (k) => padL + (xMax <= 0 ? 0 : k / xMax) * plotW;
+
+    let s = "";
+
+    // band backgrounds + in-band labels
+    BANDS.forEach((b) => {
+      const yTop = y(b.hi), yBot = y(b.lo);
+      s += `<rect x="${padL}" y="${yTop}" width="${plotW}" height="${yBot - yTop}" fill="${gv(b.soft)}"/>`;
+      const cy = (yTop + yBot) / 2 + 4;
+      // Right-aligned: with the zoomed x-axis the curve exits before the right edge,
+      // leaving the right side of every band empty for its label.
+      s += `<text x="${padL + plotW - 10}" y="${cy}" text-anchor="end" font-size="12.5" font-weight="700" fill="${gv(b.color)}" opacity=".85">${b.label}</text>`;
+    });
+
+    // 10-hour ceiling line + label (left side, clear of band labels on the right)
+    s += `<line x1="${padL}" y1="${y(10)}" x2="${padL + plotW}" y2="${y(10)}" stroke="#1a1a1a" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+    s += `<text x="${padL + 8}" y="${y(10) - 6}" text-anchor="start" font-size="11.5" font-weight="700" fill="#1a1a1a">10-hour ceiling</text>`;
+
+    // axes ticks
+    [4, 8, 12, 16].forEach((h) => {
+      s += `<text x="${padL - 8}" y="${y(h) + 4}" text-anchor="end" font-size="10" fill="#6b665c">${h}</text>`;
+    });
+    s += `<text transform="translate(16 ${padT + plotH / 2}) rotate(-90)" text-anchor="middle" font-size="11" fill="#6b665c">hours / day</text>`;
+    const xstep = [1, 2, 3, 5, 10, 15, 20].find((st) => xMax / st <= 6) || Math.ceil(xMax / 6);
+    for (let kk = 0; kk <= xMax; kk += xstep) {
+      s += `<text x="${x(kk)}" y="${H - 18}" text-anchor="middle" font-size="10" fill="#6b665c">${kk}</text>`;
+    }
+    s += `<text x="${padL + plotW / 2}" y="${H - 2}" text-anchor="middle" font-size="11" fill="#6b665c">days skipped →</text>`;
+
+    // ---- the curve, in two parts ----
+    const buildPath = (kFrom, kTo) => {
+      let p = "";
+      const steps = Math.max(1, Math.ceil((kTo - kFrom) / 0.15));
+      for (let i = 0; i <= steps; i++) {
+        const k = kFrom + (kTo - kFrom) * (i / steps);
+        p += (i === 0 ? "M" : "L") + x(k).toFixed(1) + " " + y(loadAt(k)).toFixed(1) + " ";
+      }
+      return p;
+    };
+    // solid: from 0 up to where it enters fantasy (load = 12)
+    const solidEnd = Math.min(kBlow, kCross, kMax);
+    s += `<path d="${buildPath(0, solidEnd)}" fill="none" stroke="${gv("--accent")}" stroke-width="3" stroke-linejoin="round"/>`;
+    // exploding: lighter, dashed, from fantasy entry up to the top edge — signals "asymptote, not cut off"
+    if (kCross > solidEnd) {
+      s += `<path d="${buildPath(solidEnd, kCross)}" fill="none" stroke="${gv("--accent-faint")}" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+      // upward arrow at the exit point + label (label flips to the left when the exit
+      // point is near the right edge, so it never clips off the chart)
+      const ex = x(kCross), ey = padT;
+      s += `<path d="M ${ex} ${ey - 2} l -5 9 l 10 0 z" fill="${gv("--accent-faint")}"/>`;
+      const labLeft = ex > padL + plotW * 0.55;
+      s += `<text x="${labLeft ? ex - 9 : ex + 10}" y="${ey + 12}" text-anchor="${labLeft ? "end" : "start"}" font-size="11" font-weight="700" fill="${gv("--accent-faint")}">↑ climbs to ∞</text>`;
+    }
+
+    // ---- current-position marker ----
+    if (d.k >= 0) {
+      const z = zoneFor(d.load);
+      const offTop = !isFinite(d.load) || d.load > Y_MAX;
+      const cx = x(Math.min(d.k, xMax));
+      const cy = offTop ? padT + 2 : y(d.load);
+      s += `<line x1="${cx}" y1="${padT}" x2="${cx}" y2="${padT + plotH}" stroke="${gv(z.color)}" stroke-width="1" stroke-dasharray="3 3" opacity=".45"/>`;
+      s += `<circle cx="${cx}" cy="${cy}" r="7" fill="${gv(z.color)}" stroke="#fff" stroke-width="2.5"/>`;
+      if (offTop) s += `<path d="M ${cx} ${cy - 11} l -4 6 l 8 0 z" fill="${gv(z.color)}"/>`;
+    }
+
+    svg.innerHTML = s;
+  }
+
+  // ---------- Render all ----------
+  function renderAll(rebuildGrid) {
+    const d = derived();
+    $("dCostDay").textContent = money(d.costPerDay) + "/day";
+    $("dTotalHrs").textContent = d.totalHrs.toLocaleString("en-US") + " hr";
+    $("cntDone").textContent = d.doneCount;
+    $("cntSkip").textContent = d.k;
+    if (rebuildGrid) renderWeeks();
+    renderWorkload(d);
+  }
+
+  // ---------- Inputs ----------
+  function syncInputs() {
+    $("inN").value = state.N;
+    $("inNnum").value = state.N;
+    $("inCost").value = state.cost;
+  }
+  function onN(val) {
+    const n = Math.max(1, Math.min(200, Math.round(val) || 1));
+    state.N = n; resizeDays(n); syncInputs(); renderAll(true);
+  }
+  $("inN").addEventListener("input", (e) => onN(+e.target.value));
+  $("inNnum").addEventListener("input", (e) => onN(+e.target.value));
+  $("inCost").addEventListener("input", (e) => { state.cost = Math.max(0, +e.target.value || 0); renderAll(false); });
+  $("btnReset").addEventListener("click", () => { state.days = state.days.map(() => true); renderAll(true); });
+  // Quick scenarios — skip the last day(s) of every 5-day week (e.g. always blow off Friday)
+  const applyWeekly = (skips) => { state.days = state.days.map((_, i) => (i % 5) < (5 - skips)); renderAll(true); };
+  $("btnSkip1").addEventListener("click", () => applyWeekly(1));
+  $("btnSkip2").addEventListener("click", () => applyWeekly(2));
+
+  // ---------- Init ----------
+  resizeDays(state.N);
+  buildHourSeg();
+  syncInputs();
+  renderAll(true);
+})();
+</script>
+</body>
+</html>
