@@ -46,3 +46,20 @@ Every input is an editable assumption — set them to match your own term.
 - Typography: Fraunces, Hanken Grotesk, JetBrains Mono (via Google Fonts).
 - Deployed with GitHub Pages from the `master` branch — edit `index.html`,
   commit, and push to update the live site.
+
+## Future directions
+
+Ideas for later — contributions and suggestions welcome:
+
+- **Recovery penalty.** Make a skipped day cost *more* than one day to make up
+  (an efficiency-loss coefficient), so the catch-up curve steepens even further.
+- **A money lens.** An optional second view contrasting what you've paid for with
+  the live value of the days you actually attend — kept separate from the
+  hours/workload view so the two ideas don't blur.
+- **Shareable scenarios.** Encode the inputs (work-days, cost, hours, skip count)
+  in the URL so a specific scenario can be linked or sent to someone.
+- **Compare scenarios** side by side.
+- **More academic structures.** Presets for quarters, summer sessions, and custom
+  calendars; optional currency selection.
+- **Polish.** Accessibility pass, small-screen refinements, and a short
+  "about the assumptions" explainer.
